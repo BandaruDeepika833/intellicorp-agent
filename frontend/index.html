@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Intellicorp AI Research Bot</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #chatbox {
+            width: 100%;
+            height: 350px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+        .user { color: blue; margin: 8px 0; }
+        .bot { color: green; margin: 8px 0; }
+    </style>
+</head>
+
+<body>
+
+<h2>Intellicorp AI Research Bot</h2>
+
+<div id="chatbox"></div>
+
+<input id="msg" placeholder="Ask anything (Example: Research: Infosys)" style="width:70%">
+<button onclick="sendMessage()">Send</button>
+
+<script>
+async function sendMessage() {
+    const box = document.getElementById("chatbox");
+    const userMsg = document.getElementById("msg").value;
+    document.getElementById("msg").value = "";
+
+    box.innerHTML += `<div class="user"><b>You:</b> ${userMsg}</div>`;
+
+    const res = await fetch("http://127.0.0.1:8000/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ user_id: "test", message: userMsg })
+    });
+
+    const data = await res.json();
+
+    let botReply = "";
+    if (data.response) botReply = data.response;
+    else if (data.summary) botReply = data.summary;
+    else botReply = JSON.stringify(data, null, 2);
+
+    box.innerHTML += `<div class="bot"><b>Bot:</b><br>${botReply.replace(/\n/g,"<br>")}</div>`;
+    box.scrollTop = box.scrollHeight;
+}
+</script>
+
+</body>
+</html>
