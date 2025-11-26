@@ -232,7 +232,7 @@ frontend/index.html
 ---
 
 ## Repository Structure
-
+```text
 intellicorp-agent/
 │
 ├── backend/
@@ -255,7 +255,7 @@ intellicorp-agent/
 │
 ├── requirements.txt
 └── run.sh
-
+```
 ---
 
 ## Conclusion
