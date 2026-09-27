@@ -258,7 +258,7 @@ intellicorp-agent/
 
 ## Conclusion
 
-Intellicorp-Agent fulfills the key requirements of the **Eightfold AI Company Research Assistant Assignment**:
+Intellicorp-Agent fulfills the key requirements of the **AI Company Research Assistant**:
 
 - Agentic multi-step research behavior  
 - LLM-powered synthesis & JSON generation  
