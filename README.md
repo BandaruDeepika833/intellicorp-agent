@@ -1,6 +1,4 @@
-# Intellicorp-Agent — Company Research Assistant (Eightfold.ai Assignment)
-
-This project is built for the **Eightfold.ai – AI Agent Building Assignment** under:
+# Intellicorp-Agent — Company Research Assistant 
 
 ### Problem Statement 1: Company Research Assistant (Account Plan Generator)
 
