@@ -1,7 +1,9 @@
 import json
+
 from .llm_client import ask_llm
 
-async def generate_account_plan(summary):
+
+async def generate_account_plan(summary: str) -> dict:
     prompt = f"""
 Create a detailed enterprise account plan.
 
@@ -21,11 +23,10 @@ Base on this summary:
 
     response = await ask_llm(prompt)
 
-    # Parse JSON
     try:
         return json.loads(response)
-    except:
+    except json.JSONDecodeError:
         return {
             "error": "JSON parse failed",
-            "raw": response
+            "raw": response,
         }
