@@ -21,6 +21,13 @@ app.add_middleware(
 
 user_sessions = {}
 
+
+@app.get("/health", tags=["operations"])
+async def health_check():
+    """Lightweight liveness probe for the API process."""
+    return {"status": "ok"}
+
+
 class ChatRequest(BaseModel):
     user_id: str
     message: str
@@ -115,7 +122,7 @@ async def chat(request: ChatRequest):
 
         try:
             section, new_text = msg.replace("update:", "").split("=", 1)
-        except:
+        except ValueError:
             return {"error": "Use format: update: risks=new value"}
 
         section = section.strip()
@@ -149,5 +156,3 @@ async def chat(request: ChatRequest):
 @app.get("/plan/{user_id}/{company}")
 def load_plan(user_id: str, company: str):
     return storage.load(user_id, company)
-
-
