@@ -1,12 +1,11 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from .researcher import research_company
-from .planner import generate_account_plan
-from .storage import Storage
 from .llm_client import ask_llm
-
-from fastapi.middleware.cors import CORSMiddleware
+from .planner import generate_account_plan
+from .researcher import research_company
+from .storage import Storage
 
 app = FastAPI()
 storage = Storage("data")
@@ -33,34 +32,27 @@ class ChatRequest(BaseModel):
     message: str
 
 
-# ======================================================
-# USER BEHAVIOR CLASSIFICATION
-# ======================================================
 async def classify_message(msg: str):
     text = msg.lower().strip()
 
-    # Confused User
     if text in ["idk", "i dont know", "not sure", "help", "confused"]:
         reply = await ask_llm(
             f"The user is confused. Give simple guidance. User said: '{msg}'"
         )
         return {"type": "confused", "response": reply}
 
-    # Efficient User
     if any(w in text for w in ["quick", "fast", "short"]):
         reply = await ask_llm(
             f"User wants fast results. Reply concisely. User said: '{msg}'"
         )
         return {"type": "efficient", "response": reply}
 
-    # Chatty User
     if any(w in text for w in ["hi", "hello", "lol", "haha", "bro", "how are you"]):
         reply = await ask_llm(
             f"User is chatty. Be friendly but guide them to the right format. User said: '{msg}'"
         )
         return {"type": "chatty", "response": reply}
 
-    # Edge Case User
     if len(text) < 3 or text.isnumeric() or "asdf" in text:
         reply = await ask_llm(
             f"Invalid input. Politely guide them. User said: '{msg}'"
@@ -70,9 +62,6 @@ async def classify_message(msg: str):
     return {"type": "normal"}
 
 
-# ======================================================
-# CHAT ENDPOINT
-# ======================================================
 @app.post("/chat")
 async def chat(request: ChatRequest):
     msg = request.message
@@ -82,22 +71,19 @@ async def chat(request: ChatRequest):
         user_sessions[user] = {
             "company": None,
             "summary": None,
-            "plan": None
+            "plan": None,
         }
 
     session = user_sessions[user]
 
-    # 1) Detect user type
     behavior = await classify_message(msg)
     if behavior["type"] != "normal":
         return behavior
 
     msg = msg.lower().strip()
 
-    # ========== RESEARCH ==========
     if msg.startswith("research:"):
         company = msg.replace("research:", "").strip()
-
         session["company"] = company
 
         findings = await research_company(company)
@@ -105,17 +91,15 @@ async def chat(request: ChatRequest):
 
         plan = await generate_account_plan(findings["summary"])
         session["plan"] = plan
-
         storage.save(user, company, plan)
 
         return {
             "mode": "research",
             "company": company,
             "summary": findings["summary"],
-            "plan": plan
+            "plan": plan,
         }
 
-    # ========== UPDATE ==========
     if msg.startswith("update:"):
         if session["plan"] is None:
             return {"error": "Run Research first."}
@@ -129,7 +113,7 @@ async def chat(request: ChatRequest):
         new_text = new_text.strip()
 
         matched_key = None
-        for key in session["plan"].keys():
+        for key in session["plan"]:
             if section.lower() in key.lower():
                 matched_key = key
                 break
@@ -143,10 +127,9 @@ async def chat(request: ChatRequest):
         return {
             "mode": "update",
             "status": f"Updated {matched_key}",
-            "plan": session["plan"]
+            "plan": session["plan"],
         }
 
-    # ========== DEFAULT ==========
     fallback = await ask_llm(
         f"User asked: '{msg}'. Explain how to use Research: <company> or Update: <section>=<text>."
     )
